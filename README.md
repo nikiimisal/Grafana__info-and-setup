@@ -13,6 +13,9 @@
 - [About Grafana](#example-0)
 - [Conclusion- Quick Flow](#example-1)
 - [Grafana Monitoring Setup](#example-2)
+  - [Connecting Grafana to Prometheus](#example-3)
+  - [Connecting MySQL Database to Grafana](#example-4)
+  - [Alertmanager Setup (Prometheus Alerting System)](#example-5)
 
 
 
@@ -582,6 +585,8 @@ Grafana is now successfully installed and ready to connect with Prometheus.
 
 ---
 
+<a id="example-3"></a>
+
 # 🔗 Connecting Grafana to Prometheus (Data Source Configuration)
 
 Prometheus installation is completed.
@@ -760,7 +765,8 @@ Now your monitoring stack is fully connected 🎯
 
 
 
----
+<a id="example-4"></a>
+
 
 # 🗄 Connecting MySQL Database to Grafana (Second Data Source Example)
 
@@ -1054,8 +1060,7 @@ Now your monitoring + database visualization stack is complete 🚀
 ---
 ---
 
-
----
+<a id="example-5"></a>
 
 # 🚨 Alertmanager Setup (Prometheus Alerting System)
 
