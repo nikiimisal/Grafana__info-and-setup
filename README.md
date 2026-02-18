@@ -575,11 +575,184 @@ Grafana is now successfully installed and ready to connect with Prometheus.
 
 
 ---
+---
+
+---
+
+# 🔗 Connecting Grafana to Prometheus (Data Source Configuration)
+
+Prometheus installation is completed.
+
+Now we want to visualize the collected metrics.
+
+Prometheus is already collecting data from Node Exporter and storing it.
+
+But Grafana does not automatically know where that data is.
+
+So we need to create a data connection.
+
+---
+
+## 📌 Why Data Connection is Required?
+
+Data is already given to Prometheus.
+
+Now Grafana must fetch that data from Prometheus.
+
+Without connecting Grafana to Prometheus, dashboards will not show any metrics.
+
+So the first step is:
+
+👉 Add Prometheus as a Data Source in Grafana.
+
+---
+
+## 🔌 Understanding Data Sources 
+
+Grafana supports multiple types of data sources.
+
+You can connect:
+
+- Prometheus
+- MySQL
+- PostgreSQL
+- AWS RDS
+- Custom Database Server
+- Application metrics
+- Cloud monitoring tools
+
+In Jenkins → we call it Plugins.  
+In Grafana → we call it Data Source / Connection.
+
+Concept is similar.
+
+If you want Prometheus data → select Prometheus connection.  
+If you want MySQL data → select MySQL connection.
+If you want any other monitoring tool → choose that plugin
+
+---
+
+## 🛠 Steps to Connect Prometheus
+
+### 1️⃣ Open Grafana
+
+```
+http://YOUR_PUBLIC_IP:3000
+```
+
+Login with your credentials.
+
+---
+
+### 2️⃣ Add New Connection
+
+1. Go to **Home**
+2. Click on **Connections**
+3. Click **Add new connection**
+4. Select **Prometheus**
+
+---
+
+### 3️⃣ Configure URL
+
+Currently:
+
+Prometheus and Grafana are running on the same server.
+
+So use:
+
+```
+http://localhost:9090
+```
+
+If Prometheus was on a different server:
+
+```
+http://PRIVATE_IP:9090
+```
+or
+```
+http://PUBLIC_IP:9090
+```
+
+For beginner understanding, keep everything on the same server.
+
+---
+
+### 4️⃣ Save & Test
+
+Click:
+
+```
+Save & Test
+```
+
+If successful, you will see:
+
+```
+Data source is working
+```
+
+Now Grafana is successfully connected to Prometheus.
+
+---
+
+# 📊 Creating Dashboard & Viewing Data
+
+After connecting data source:
+
+1. Click **Dashboards**
+2. Click **Create Dashboard**
+3. Click **Add Visualization**
+4. Select **Prometheus**
+
+Add metric example:
+
+```
+node_cpu_seconds_total
+```
+
+Click **Run Queries**
+
+Now you can visualize data.
+
+---
+
+## 📈 Visualization Formats
+
+You can display data in different formats:
+
+- Time Series
+- Stat
+- Bar Chart
+- Gauge
+- Table
+
+Example:
+
+CPU Usage → Time Series  
+Single value metric → Stat  
+Comparison metrics → Bar Chart  
+
+Grafana gives flexibility to view the same data in multiple formats.
+
+---
+
+## ✅ Overview
+
+Prometheus → Collects & Stores Data  
+Grafana → Fetches & Visualizes Data  
+
+Prometheus = Backend Monitoring Engine  
+Grafana = Frontend Visualization Layer  
+
+Now your monitoring stack is fully connected 🎯
 
 
 
-
-
+---
+---
+---
 
 
 
