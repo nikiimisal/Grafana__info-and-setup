@@ -34,6 +34,8 @@
 
 ##  1️⃣ Grafana
 
+>You can also see about grafana in their offical docmuntation[click here](https://grafana.com/docs/grafana/latest/introduction/)
+
 Grafana is an open-source analytics and interactive visualization platform used to query, visualize, and analyze monitoring data from multiple data sources such as Prometheus, CloudWatch, MySQL, Elasticsearch, and others.
 
 Grafana does not collect metrics by itself.<br>
@@ -345,10 +347,234 @@ So yes, the real skill in Grafana is:
 <a id="example-2"></a>
 
 
+##  📊 Grafana Monitoring Setup
+
+###  📌 Important Note Before Starting
+
+Previously, we launched an EC2 instance for Prometheus and Node Exporter.
+
+For this setup, we will use the same instance and simply open port **3000** in the Security Group for Grafana.
+
+In real-time production environments:
+
+- Prometheus server can be on a separate instance
+- Grafana server can be on a different instance
+- Node Exporter can run on multiple different servers
+
+It is not mandatory that everything runs on the same machine.
+
+However, instead of launching three different instances, we are using a single instance for simplicity and cost optimization.
+
+Difference:
+
+- If everything runs on the same server → we use `localhost:PORT`
+- If running on different servers → we must use Private IP or Public IP addresses
+
+One more reason for using a single instance:
+
+👉 It simplifies networking and avoids unnecessary security group configuration complexity during learning.
+
+In production, separation improves scalability and security.
+In learning, simplicity improves understanding.
+
+---
+
+##  1️⃣ Update Security Group
+
+Add the following inbound rule:
+
+| Port | Purpose |
+|------|----------|
+| 3000 | Grafana |
+
+Source:
+```
+0.0.0.0/0
+```
+
+Why:
+
+Grafana runs on port 3000 by default.  
+Without opening this port, the dashboard will not be accessible from the browser.
+
+---
+
+##  2️⃣ Connect to Server
+
+Use SSH:
+
+```bash
+ssh -i your-key.pem ubuntu@your-public-ip
+```
+
+---
+
+##  3️⃣ Change Hostname (Optional but Recommended)
+
+To clearly identify this server as a monitoring server:
+
+```bash
+sudo hostnamectl set-hostname monitoring-server
+```
+
+Why:
+
+Changing hostname improves clarity when managing multiple servers.
+
+---
+
+##  4️⃣ Install Grafana (Using Official APT Repository)
+
+⚠ Always refer to official documentation:
+
+https://grafana.com/docs/grafana/latest/setup-grafana/installation/debian/
+
+Reason:
+
+Installation steps, repository URLs, and syntax may change over time.  
+Following official documentation ensures correct and secure installation.
+
+---
+
+### Step 1: Install Prerequisite Packages
+
+```bash
+sudo apt-get install -y apt-transport-https wget gnupg
+```
+
+Why:
+
+Required to securely download and verify packages from external repositories.
+
+---
+
+### Step 2: Import Grafana GPG Key
+
+```bash
+sudo mkdir -p /etc/apt/keyrings/
+wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg > /dev/null
+```
+
+Why:
+
+This ensures package authenticity and prevents installation of tampered packages.
+
+---
+
+### Step 3: Add Grafana Repository (Stable Release)
+
+```bash
+echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+```
+
+Why:
+
+Adds Grafana’s official repository to your system.
+
+(Stable release is recommended for production usage.)
+
+---
+
+### Step 4: Update Package List
+
+```bash
+sudo apt-get update
+```
+
+Why:
+
+Refreshes available packages from newly added repository.
+
+---
+
+### Step 5: Install Grafana OSS
+
+```bash
+sudo apt-get install grafana
+```
+
+Why:
+
+Installs the latest stable Grafana Open Source version.
+
+---
+
+##  5️⃣ Start and Enable Grafana Service
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl start grafana-server
+sudo systemctl enable grafana-server
+sudo systemctl status grafana-server
+```
+
+Why:
+
+- Start → Runs Grafana immediately
+- Enable → Starts automatically after reboot
+- Status → Confirms service is active
+
+---
+
+##  6️⃣ Access Grafana Dashboard
+
+Open in browser:
+
+```
+http://YOUR_PUBLIC_IP:3000
+```
+
+Default credentials:
+
+```
+Username: admin
+Password: admin
+```
+
+You will be prompted to change the password after first login.
+
+---
+
+###  🔍 Important Understanding
+
+Since Prometheus is running on the same server:
+
+In Grafana Data Source configuration, we use:
+
+```
+http://localhost:9090
+```
+
+If Prometheus were on a different server:
+
+We would use:
+
+```
+http://PRIVATE_IP:9090
+```
+or
+```
+http://PUBLIC_IP:9090
+```
+
+So networking configuration depends on deployment architecture.
+
+---
+
+##  ✅ Overview
+
+For learning:
+
+Single server → Simple networking → localhost usage
+
+For production:
+
+Separate servers → Better scalability and isolation → IP-based communication
+
+Grafana is now successfully installed and ready to connect with Prometheus.
 
 
-
-
+---
 
 
 
