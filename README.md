@@ -466,6 +466,9 @@ This ensures package authenticity and prevents installation of tampered packages
 ```bash
 echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
 ```
+```
+echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com beta main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+```
 
 Why:
 
@@ -650,6 +653,7 @@ Login with your credentials.
 2. Click on **Connections**
 3. Click **Add new connection**
 4. Select **Prometheus**
+5. Add New Data Source
 
 ---
 
@@ -756,11 +760,557 @@ Now your monitoring stack is fully connected 🎯
 
 
 
+---
+
+# 🗄 Connecting MySQL Database to Grafana (Second Data Source Example)
+
+Previously, we connected Prometheus as a data source.
+
+Now let’s see another example — MySQL database connection.
+
+Data can come from anywhere:
+
+- Prometheus
+- RDS (AWS Managed Database)
+- DynamoDB
+- Self-hosted database server
+- Application database
+
+There are mainly two common ways to create a database:
+
+1️⃣ Use Managed Service (Example: AWS RDS)  
+2️⃣ Install Database on Your Own Server (Self-hosted)
+
+For learning purposes, we will:
+
+👉 Install MySQL on the same server  
+👉 Create a database and table  
+👉 Connect it to Grafana  
+👉 Visualize data in Dashboard  
+
+---
+
+## 📌 Important Networking Note
+
+Before connecting MySQL to Grafana:
+
+Open port **3306** in EC2 Security Group.
+
+| Port | Purpose |
+|------|----------|
+| 3306 | MySQL Database |
+
+If MySQL is on same server → technically localhost works  
+But opening port is useful for testing and future remote access.
+
+In production:
+- If using RDS → we use RDS Endpoint
+- If using separate DB server → use Private IP
+
+Since everything is on the same server:
+
+We will use:
+
+```
+localhost:3306
+```
+
+---
+
+# 🛠 Step 1: Install MySQL (Already Completed)
+
+You installed:
+
+```bash
+sudo apt install mysql-server -y
+```
+
+Start and Enable:
+
+```bash
+sudo systemctl start mysql
+sudo systemctl enable mysql
+```
+
+---
+
+# 🛠 Step 2: Create Database & Table
+
+Login:
+
+```bash
+sudo mysql
+```
+
+Set root password:
+
+```sql
+alter user root@localhost identified by 'root';
+```
+
+Create database:
+
+```sql
+create database nikii;
+```
+
+Select database:
+
+```sql
+use nikii;
+```
+
+Create table:
+
+```sql
+create table student (
+  id int,
+  name varchar(20),
+  marks int
+);
+```
+
+Insert data:
+
+```sql
+insert into student values
+(1, "rohan", 80),
+(2, "nikii", 75);
+```
+
+Check data:
+
+```sql
+select * from student;
+```
+
+Now database is ready.
+
+---
+
+# 🔌 Step 3: Add MySQL as Data Source in Grafana
+
+Open Grafana:
+
+```
+http://YOUR_PUBLIC_IP:3000
+```
+
+---
+
+### 1️⃣ Add New Connection
+
+- Go to **Connections**
+- Click **Add new connection**
+- Search for **MySQL**
+- Select MySQL plugin
+
+---
+
+### 2️⃣ Configure MySQL Connection
+
+Since MySQL is on same server:
+
+Host:
+
+```
+localhost:3306
+```
+
+Database:
+
+```
+nikii
+```
+
+User:
+
+```
+root
+```
+
+Password:
+
+```
+root
+```
+
+---
+
+### 🔎 If Database Was on RDS
+
+Host would be:
+
+```
+your-rds-endpoint.amazonaws.com:3306
+```
+
+So difference is only networking:
+
+Same server → localhost  
+Different server → Private IP / RDS Endpoint  
+
+---
+
+# ⚠ Common Error You May See
+
+Sometimes Grafana shows error like:
+
+```
+Error: This version of MySQL is not supported
+```
+
+Reason:
+
+Grafana MySQL plugin requires a compatible MySQL version (generally MySQL 5.7+ or 8.x).
+
+Solution:
+
+✔ Use MySQL 8.x (recommended)  
+✔ Make sure authentication plugin is compatible  
+
+If authentication error comes, run:
+
+```sql
+ALTER USER 'root'@'localhost'
+IDENTIFIED WITH mysql_native_password
+BY 'root';
+FLUSH PRIVILEGES;
+```
+
+Then try Save & Test again.
+
+---
+
+# ✅ Save & Test
+
+Click:
+
+```
+Save & Test
+```
+
+If everything is correct:
+
+```
+Database Connection OK
+```
+
+Now MySQL is successfully connected to Grafana 🎯
+
+---
+
+# 📊 Step 4: Visualize MySQL Data
+
+1. Go to **Dashboards**
+2. Click **Create Dashboard**
+3. Click **Add Visualization**
+4. Select **MySQL**
+
+In Query section:
+
+```sql
+SELECT * FROM student;
+```
+
+Click:
+
+```
+Run Query
+```
+
+You can now display:
+
+- Table view
+- Bar chart (marks comparison)
+- Stat (highest marks)
+- Time series (if using timestamp column)
+
+---
+
+# 🧠 Final Understanding
+
+Prometheus → Monitoring Metrics Data  
+MySQL → Structured Application Data  
+
+Grafana can visualize:
+
+- Monitoring data
+- Database data
+- Cloud data
+- Application data
+
+Grafana is not limited to Prometheus.
+
+It is a universal visualization layer.
+
+---
+
+Now your monitoring + database visualization stack is complete 🚀
 
 
 
+---
+---
+---
 
 
+---
+
+# 🚨 Alertmanager Setup (Prometheus Alerting System)
+
+Prometheus collects metrics.
+
+But monitoring is incomplete without alerting.
+
+If CPU usage goes high  
+If Memory crosses threshold  
+If Server goes down  
+
+We need automatic notifications.
+
+For that, we use:
+
+👉 Alertmanager
+
+---
+
+# 🧠 How Alerting Works
+
+Flow:
+
+```
+Application → Prometheus → Alert Rule → Alertmanager → Email / Slack / Other Notification
+```
+
+Prometheus detects the problem.  
+Alertmanager sends the notification.
+
+Prometheus = Detection  
+Alertmanager = Notification
+
+---
+
+# 🛠 Step 1: Download Alertmanager
+
+Go to:
+```
+https://prometheus.io/download/
+```
+Download latest stable version.
+
+On server:
+
+```bash
+cd /tmp
+wget https://github.com/prometheus/alertmanager/releases/latest/download/alertmanager-*.linux-amd64.tar.gz
+```
+
+Extract:
+
+```bash
+tar -xvf alertmanager-*.linux-amd64.tar.gz
+```
+
+Move binaries:
+
+```bash
+sudo mv alertmanager-*/alertmanager /usr/local/bin/
+sudo mv alertmanager-*/amtool /usr/local/bin/
+```
+
+---
+
+# 🛠 Step 2: Create Alertmanager User
+
+```bash
+sudo useradd --no-create-home --shell /bin/false alertmanager
+```
+
+Create directory:
+
+```bash
+sudo mkdir /etc/alertmanager
+sudo mkdir /var/lib/alertmanager
+```
+
+Set ownership:
+
+```bash
+sudo chown alertmanager:alertmanager /etc/alertmanager
+sudo chown alertmanager:alertmanager /var/lib/alertmanager
+```
+
+---
+
+# 🛠 Step 3: Create Configuration File
+
+Create file:
+
+```bash
+sudo nano /etc/alertmanager/alertmanager.yml
+```
+
+Basic Email Example:
+
+```yaml
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'your-email@gmail.com'
+  smtp_auth_username: 'your-email@gmail.com'
+  smtp_auth_password: 'your-app-password'
+
+route:
+  receiver: 'email-alert'
+
+receivers:
+- name: 'email-alert'
+  email_configs:
+  - to: 'receiver-email@gmail.com'
+```
+
+⚠ Use App Password if using Gmail.
+
+---
+
+# 🛠 Step 4: Create Systemd Service
+
+Create service file:
+
+```bash
+sudo nano /etc/systemd/system/alertmanager.service
+```
+
+Paste:
+
+```ini
+[Unit]
+Description=Alertmanager
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=alertmanager
+ExecStart=/usr/local/bin/alertmanager \
+  --config.file=/etc/alertmanager/alertmanager.yml \
+  --storage.path=/var/lib/alertmanager
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Reload systemd:
+
+```bash
+sudo systemctl daemon-reload
+```
+
+Start service:
+
+```bash
+sudo systemctl start alertmanager
+sudo systemctl enable alertmanager
+sudo systemctl status alertmanager
+```
+
+---
+
+# 🔓 Step 5: Open Port 9093
+
+Add Security Group rule:
+
+| Port | Purpose |
+|------|----------|
+| 9093 | Alertmanager |
+
+Access in browser:
+
+```
+http://YOUR_PUBLIC_IP:9093
+```
+
+---
+
+# 🔗 Step 6: Connect Prometheus to Alertmanager
+
+Edit Prometheus config:
+
+```bash
+sudo nano /etc/prometheus/prometheus.yml
+```
+
+Add:
+
+```yaml
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - "localhost:9093"
+```
+
+Restart Prometheus:
+
+```bash
+sudo systemctl restart prometheus
+```
+
+---
+
+# 🛠 Step 7: Create Alert Rule
+
+Create file:
+
+```bash
+sudo nano /etc/prometheus/alert.rules.yml
+```
+
+Example CPU alert:
+
+```yaml
+groups:
+- name: cpu-alerts
+  rules:
+  - alert: HighCPUUsage
+    expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100) > 80
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU Usage"
+      description: "CPU usage is above 80%"
+```
+
+Now include this file in prometheus.yml:
+
+```yaml
+rule_files:
+  - "/etc/prometheus/alert.rules.yml"
+```
+
+Restart Prometheus:
+
+```bash
+sudo systemctl restart prometheus
+```
+
+---
+
+# ✅ Final Architecture
+
+Node Exporter → Prometheus → Alert Rule → Alertmanager → Email
+
+Now your monitoring stack includes:
+
+✔ Metrics Collection  
+✔ Visualization  
+✔ Alerting System  
+
+Production-ready monitoring foundation complete 🚀
+
+---
+---
+---
 
 
 
