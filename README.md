@@ -26,7 +26,7 @@
 ---
 
 <p align="center">
-  <img src="" width="500" alt="Initialize Repository Screenshot">
+  <img src="https://github.com/nikiimisal/Grafana__info-and-setup/blob/main/img/grafana.png?raw=true" width="500" alt="Initialize Repository Screenshot">
 </p>
 
 
